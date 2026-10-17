@@ -1,10 +1,11 @@
---[[ Yakuza Menu - single file loadstring script ]]
+-- LocalScript en StarterPlayerScripts
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
+-- ===== GUI PRINCIPAL =====
 local gui = Instance.new("ScreenGui")
 gui.Name = "YakuzaMenu"
 gui.ResetOnSpawn = false
@@ -24,7 +25,7 @@ local function cornerLine(parent, size, pos, color)
 	return l
 end
 
--- BOTÓN
+-- ===== BOTÓN ABRIR FUTURISTA =====
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 180, 0, 50)
 toggleBtn.Position = UDim2.new(0, 20, 0, 80)
@@ -90,7 +91,7 @@ toggleBtn.MouseLeave:Connect(function()
 	TweenService:Create(toggleBtn, TweenInfo.new(0.15), {Size = UDim2.new(0, 180, 0, 50), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 end)
 
--- VENTANA
+-- ===== VENTANA PRINCIPAL =====
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 560, 0, 650)
 frame.Position = UDim2.new(0, 20, 0, 145)
@@ -155,7 +156,7 @@ cornerLine(frame, UDim2.new(0, 2, 0, 18), UDim2.new(0, 10, 1, -28))
 cornerLine(frame, UDim2.new(0, 18, 0, 2), UDim2.new(1, -28, 1, -12))
 cornerLine(frame, UDim2.new(0, 2, 0, 18), UDim2.new(1, -12, 1, -28))
 
--- CABECERA
+-- ===== CABECERA =====
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 48)
 titleBar.BackgroundColor3 = Color3.fromRGB(28, 10, 18)
@@ -212,7 +213,7 @@ title.Parent = titleBar
 
 local subtitle = Instance.new("TextLabel")
 subtitle.Size = UDim2.new(0, 120, 0, 14)
-subtitle.Position = UDim2.new(1, -200, 0, 8)
+subtitle.Position = UDim2.new(1, -160, 0, 8)
 subtitle.BackgroundTransparency = 1
 subtitle.Text = "CONTROL PANEL"
 subtitle.TextColor3 = Color3.fromRGB(255, 150, 180)
@@ -222,29 +223,7 @@ subtitle.TextSize = 9
 subtitle.TextXAlignment = Enum.TextXAlignment.Right
 subtitle.Parent = titleBar
 
-local configBtn = Instance.new("TextButton")
-configBtn.Size = UDim2.new(0, 28, 0, 28)
-configBtn.Position = UDim2.new(1, -72, 0, 10)
-configBtn.BackgroundColor3 = Color3.fromRGB(45, 25, 50)
-configBtn.Text = "⚙️"
-configBtn.TextColor3 = Color3.fromRGB(230, 190, 255)
-configBtn.Font = Enum.Font.GothamBold
-configBtn.TextSize = 14
-configBtn.BorderSizePixel = 0
-configBtn.AutoButtonColor = false
-configBtn.Parent = titleBar
-
-local cfgCorner = Instance.new("UICorner")
-cfgCorner.CornerRadius = UDim.new(0, 6)
-cfgCorner.Parent = configBtn
-
-configBtn.MouseEnter:Connect(function()
-	TweenService:Create(configBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(100, 55, 130)}):Play()
-end)
-configBtn.MouseLeave:Connect(function()
-	TweenService:Create(configBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(45, 25, 50)}):Play()
-end)
-
+-- Botón CERRAR (X) arriba a la derecha
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
 closeBtn.Position = UDim2.new(1, -38, 0, 10)
@@ -286,7 +265,7 @@ titleBar.InputChanged:Connect(function(input)
 	end
 end)
 
--- BUSCADOR + FLY SPEED
+-- ===== BUSCADOR + FLY SPEED + BOTÓN ESP =====
 local searchBox = Instance.new("TextBox")
 searchBox.Size = UDim2.new(0, 230, 0, 40)
 searchBox.Position = UDim2.new(0, 16, 0, 62)
@@ -364,6 +343,39 @@ flyLabel.TextSize = 10
 flyLabel.TextXAlignment = Enum.TextXAlignment.Left
 flyLabel.Parent = frame
 
+-- BOTÓN ESP
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(0, 90, 0, 40)
+espBtn.Position = UDim2.new(0, 356, 0, 62)
+espBtn.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
+espBtn.Text = "ESP OFF"
+espBtn.TextColor3 = Color3.fromRGB(255, 150, 150)
+espBtn.Font = Enum.Font.GothamBold
+espBtn.TextSize = 13
+espBtn.BorderSizePixel = 0
+espBtn.AutoButtonColor = false
+espBtn.Parent = frame
+
+local espBtnCorner = Instance.new("UICorner")
+espBtnCorner.CornerRadius = UDim.new(0, 6)
+espBtnCorner.Parent = espBtn
+
+local espBtnStroke = Instance.new("UIStroke")
+espBtnStroke.Color = Color3.fromRGB(120, 40, 40)
+espBtnStroke.Thickness = 1
+espBtnStroke.Parent = espBtn
+
+espBtn.MouseEnter:Connect(function()
+	TweenService:Create(espBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 30, 30)}):Play()
+end)
+espBtn.MouseLeave:Connect(function()
+	if espBtn.Text == "ESP OFF" then
+		TweenService:Create(espBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(60, 20, 20)}):Play()
+	else
+		TweenService:Create(espBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(20, 60, 20)}):Play()
+	end
+end)
+
 local sep = Instance.new("Frame")
 sep.Size = UDim2.new(1, -32, 0, 1)
 sep.Position = UDim2.new(0, 16, 0, 128)
@@ -371,7 +383,7 @@ sep.BackgroundColor3 = Color3.fromRGB(70, 40, 60)
 sep.BorderSizePixel = 0
 sep.Parent = frame
 
--- LISTA + ACCIONES
+-- ===== ZONA LISTA + ACCIONES =====
 local contentY = 140
 
 local listHeader = Instance.new("TextLabel")
@@ -673,7 +685,7 @@ spectateBtn.MouseLeave:Connect(function()
 	TweenService:Create(spectateBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
 end)
 
--- AVISO ESPECTAR
+-- ===== AVISO ESPECTAR =====
 local spectateNotice = Instance.new("TextLabel")
 spectateNotice.Size = UDim2.new(0, 360, 0, 28)
 spectateNotice.Position = UDim2.new(0.5, -180, 0, 20)
@@ -698,138 +710,7 @@ noticeStroke.Thickness = 1
 noticeStroke.Transparency = 0.2
 noticeStroke.Parent = spectateNotice
 
--- PANEL PERFIL
-local configPanel = Instance.new("Frame")
-configPanel.Size = UDim2.new(0, 420, 0, 420)
-configPanel.Position = UDim2.new(0.5, -210, 0.5, -210)
-configPanel.BackgroundColor3 = Color3.fromRGB(18, 10, 25)
-configPanel.BorderSizePixel = 0
-configPanel.Visible = false
-configPanel.ClipsDescendants = true
-configPanel.ZIndex = 20
-configPanel.Parent = gui
-
-local cpCorner = Instance.new("UICorner")
-cpCorner.CornerRadius = UDim.new(0, 8)
-cpCorner.Parent = configPanel
-
-local cpGrad = Instance.new("UIGradient")
-cpGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 20, 60)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 8, 22)),
-})
-cpGrad.Rotation = 45
-cpGrad.Parent = configPanel
-
-local cpStroke1 = Instance.new("UIStroke")
-cpStroke1.Color = Color3.fromRGB(170, 100, 255)
-cpStroke1.Thickness = 1.5
-cpStroke1.Transparency = 0.1
-cpStroke1.Parent = configPanel
-
-local cpStroke2 = Instance.new("UIStroke")
-cpStroke2.Color = Color3.fromRGB(230, 200, 255)
-cpStroke2.Thickness = 0.5
-cpStroke2.Transparency = 0.5
-cpStroke2.Parent = configPanel
-
-cornerLine(configPanel, UDim2.new(0, 14, 0, 2), UDim2.new(0, 8, 0, 8), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 2, 0, 14), UDim2.new(0, 8, 0, 8), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 14, 0, 2), UDim2.new(1, -22, 0, 8), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 2, 0, 14), UDim2.new(1, -10, 0, 8), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 14, 0, 2), UDim2.new(0, 8, 1, -10), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 2, 0, 14), UDim2.new(0, 8, 1, -22), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 14, 0, 2), UDim2.new(1, -22, 1, -10), Color3.fromRGB(200, 140, 255))
-cornerLine(configPanel, UDim2.new(0, 2, 0, 14), UDim2.new(1, -10, 1, -22), Color3.fromRGB(200, 140, 255))
-
-task.spawn(function()
-	while configPanel.Parent do
-		TweenService:Create(cpStroke1, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.65, Thickness = 2.5}):Play()
-		task.wait(0.9)
-		TweenService:Create(cpStroke1, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.05, Thickness = 1.5}):Play()
-		task.wait(0.9)
-	end
-end)
-
-local cpClose = Instance.new("TextButton")
-cpClose.Size = UDim2.new(0, 28, 0, 28)
-cpClose.Position = UDim2.new(1, -38, 0, 10)
-cpClose.BackgroundColor3 = Color3.fromRGB(60, 20, 60)
-cpClose.Text = "✕"
-cpClose.TextColor3 = Color3.fromRGB(255, 150, 255)
-cpClose.Font = Enum.Font.GothamBold
-cpClose.TextSize = 14
-cpClose.BorderSizePixel = 0
-cpClose.AutoButtonColor = false
-cpClose.ZIndex = 22
-cpClose.Parent = configPanel
-
-local cpCloseCorner = Instance.new("UICorner")
-cpCloseCorner.CornerRadius = UDim.new(0, 6)
-cpCloseCorner.Parent = cpClose
-
-local line1 = Instance.new("TextLabel")
-line1.Size = UDim2.new(1, 0, 0, 60)
-line1.Position = UDim2.new(0, 0, 0, 60)
-line1.BackgroundTransparency = 1
-line1.Text = "💎 FUNDER"
-line1.TextColor3 = Color3.fromRGB(220, 200, 255)
-line1.Font = Enum.Font.GothamBlack
-line1.TextSize = 36
-line1.ZIndex = 21
-line1.Parent = configPanel
-
-local line2 = Instance.new("TextLabel")
-line2.Size = UDim2.new(1, 0, 0, 55)
-line2.Position = UDim2.new(0, 0, 0, 135)
-line2.BackgroundTransparency = 1
-line2.Text = "SIC4RIO"
-line2.TextColor3 = Color3.fromRGB(255, 80, 100)
-line2.Font = Enum.Font.GothamBlack
-line2.TextSize = 34
-line2.ZIndex = 21
-line2.Parent = configPanel
-
-local line3 = Instance.new("TextLabel")
-line3.Size = UDim2.new(1, 0, 0, 55)
-line3.Position = UDim2.new(0, 0, 0, 200)
-line3.BackgroundTransparency = 1
-line3.Text = "MR SUFRIDO"
-line3.TextColor3 = Color3.fromRGB(255, 140, 160)
-line3.Font = Enum.Font.GothamBlack
-line3.TextSize = 30
-line3.ZIndex = 21
-line3.Parent = configPanel
-
-local deco = Instance.new("Frame")
-deco.Size = UDim2.new(0, 200, 0, 2)
-deco.Position = UDim2.new(0.5, -100, 1, -60)
-deco.BackgroundColor3 = Color3.fromRGB(180, 120, 255)
-deco.BorderSizePixel = 0
-deco.ZIndex = 21
-deco.Parent = configPanel
-
-local decoGrad = Instance.new("UIGradient")
-decoGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 40, 120)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 160, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 40, 120)),
-})
-decoGrad.Parent = deco
-
-configBtn.MouseButton1Click:Connect(function()
-	configPanel.Visible = true
-	configPanel.Size = UDim2.new(0, 420, 0, 0)
-	TweenService:Create(configPanel, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 420, 0, 420)}):Play()
-end)
-
-cpClose.MouseButton1Click:Connect(function()
-	TweenService:Create(configPanel, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 420, 0, 0)}):Play()
-	task.wait(0.18)
-	configPanel.Visible = false
-end)
-
--- ESTADO
+-- ===== ESTADO =====
 local selectedPlayer = nil
 local filterText = ""
 
@@ -844,7 +725,150 @@ local function getTargetRoot()
 	return char and char:FindFirstChild("HumanoidRootPart")
 end
 
--- ESPECTAR
+-- ===== LÓGICA ESP =====
+local espActive = false
+local espTags = {}
+local espHighlights = {}
+
+local function createESP(p)
+	if p == player then return end
+	local char = p.Character
+	if not char then return end
+	local head = char:FindFirstChild("Head")
+	if not head then return end
+
+	if espTags[p] and espTags[p].Parent then
+		espTags[p]:Destroy()
+	end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "YakuzaESP"
+	billboard.Size = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+	billboard.AlwaysOnTop = true
+	billboard.Adornee = head
+	billboard.Parent = head
+
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1, 0, 1, 0)
+	text.BackgroundTransparency = 1
+	text.TextColor3 = Color3.fromRGB(255, 100, 120)
+	text.Font = Enum.Font.GothamBold
+	text.TextSize = 14
+	text.TextStrokeTransparency = 0.5
+	text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	text.Parent = billboard
+
+	espTags[p] = billboard
+end
+
+local function createHighlight(p)
+	if p == player then return end
+	local char = p.Character
+	if not char then return end
+
+	if espHighlights[p] then
+		espHighlights[p]:Destroy()
+	end
+
+	local hl = Instance.new("Highlight")
+	hl.Name = "YakuzaHL"
+	hl.FillColor = Color3.fromRGB(255, 0, 0)
+	hl.OutlineColor = Color3.fromRGB(255, 0, 0)
+	hl.FillTransparency = 0.5
+	hl.OutlineTransparency = 0
+	hl.Adornee = char
+	hl.Parent = char
+
+	espHighlights[p] = hl
+end
+
+local function toggleESP()
+	espActive = not espActive
+	if espActive then
+		espBtn.Text = "ESP ON"
+		espBtn.BackgroundColor3 = Color3.fromRGB(20, 60, 20)
+		espBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+		espBtnStroke.Color = Color3.fromRGB(40, 120, 40)
+
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p ~= player then
+				createESP(p)
+				createHighlight(p)
+			end
+		end
+	else
+		espBtn.Text = "ESP OFF"
+		espBtn.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
+		espBtn.TextColor3 = Color3.fromRGB(255, 150, 150)
+		espBtnStroke.Color = Color3.fromRGB(120, 40, 40)
+
+		for p, tag in pairs(espTags) do
+			if tag then tag:Destroy() end
+			espTags[p] = nil
+		end
+		for p, hl in pairs(espHighlights) do
+			if hl then hl:Destroy() end
+			espHighlights[p] = nil
+		end
+	end
+end
+
+espBtn.MouseButton1Click:Connect(toggleESP)
+
+local function updateESP()
+	if not espActive then return end
+	local myRoot = getMyRoot()
+	if not myRoot then return end
+	local myPos = myRoot.Position
+
+	for p, guiTag in pairs(espTags) do
+		if not guiTag.Parent or not p.Character then
+			if guiTag then guiTag:Destroy() end
+			espTags[p] = nil
+		else
+			local targetHead = p.Character:FindFirstChild("Head")
+			local targetRoot = p.Character:FindFirstChild("HumanoidRootPart")
+			if targetHead and targetRoot then
+				local dist = math.floor((myPos - targetRoot.Position).Magnitude)
+				local txt = guiTag:FindFirstChildOfClass("TextLabel")
+				if txt then
+					txt.Text = p.Name .. " [" .. dist .. "m]"
+				end
+			end
+		end
+	end
+end
+
+RunService.RenderStepped:Connect(updateESP)
+
+Players.PlayerAdded:Connect(function(p)
+	if espActive then
+		task.wait(1)
+		createESP(p)
+		createHighlight(p)
+	end
+	p.CharacterAdded:Connect(function()
+		if espActive then
+			task.wait(1)
+			createESP(p)
+			createHighlight(p)
+		end
+	end)
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+	if espTags[p] then
+		espTags[p]:Destroy()
+		espTags[p] = nil
+	end
+	if espHighlights[p] then
+		espHighlights[p]:Destroy()
+		espHighlights[p] = nil
+	end
+end)
+
+-- ===== ESPECTAR =====
 local spectating = false
 local spectateTarget = nil
 
@@ -930,7 +954,7 @@ spectateBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- TP
+-- ===== TP =====
 tpBtn.MouseButton1Click:Connect(function()
 	if spectating then stopSpectate() end
 
@@ -969,7 +993,7 @@ tpBtn.MouseButton1Click:Connect(function()
 	tpBtn.Text = "📍  TP"
 end)
 
--- FLY
+-- ===== FLY =====
 local flying = false
 local flySpeed = 80
 local flyConnection = nil
@@ -1056,7 +1080,7 @@ player.CharacterAdded:Connect(function()
 	if flying then stopFly() end
 end)
 
--- LISTA
+-- ===== LISTA JUGADORES =====
 local function refreshList()
 	for _, c in ipairs(drop:GetChildren()) do
 		if c:IsA("TextButton") then c:Destroy() end
@@ -1156,7 +1180,7 @@ Players.PlayerRemoving:Connect(function()
 	refreshList()
 end)
 
--- ABRIR/CERRAR
+-- ===== ABRIR / CERRAR =====
 local panelOpen = false
 local function setPanel(open)
 	panelOpen = open
