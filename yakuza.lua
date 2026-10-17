@@ -5,7 +5,254 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- ===== GUI PRINCIPAL =====
+-- ================= [ANTIBAN] GUARDIA =================
+if _G.__YKZ_LOADED then return end
+_G.__YKZ_LOADED = true
+
+local function antiScanDelay()
+	local checks = 0
+	for _, v in ipairs(player:GetDescendants()) do
+		if v:IsA("ScreenGui") and v.Name ~= "YakuzaMenu" then
+			checks += 1
+		end
+	end
+	if checks > 6 then
+		task.wait(math.random(2, 5))
+	end
+	task.wait(math.random(50, 350) / 1000)
+end
+
+antiScanDelay()
+
+-- ================= SISTEMA DE KEYS ROTATIVAS =================
+local KEY_LIST = {"ykz", "ykz2", "ykz3", "ykz4", "ykz5", "ykz6", "ykz7", "ykz8"}
+
+local function getCurrentKeyIndex()
+	local idx = nil
+	pcall(function()
+		idx = player:GetAttribute("__ykz_key_idx")
+	end)
+	if type(idx) ~= "number" then idx = 1 end
+	return idx
+end
+
+local function advanceKeyIndex()
+	local idx = getCurrentKeyIndex() + 1
+	if idx > #KEY_LIST then idx = 1 end
+	pcall(function()
+		player:SetAttribute("__ykz_key_idx", idx)
+	end)
+	return idx
+end
+
+local function getValidKey()
+	local idx = getCurrentKeyIndex()
+	return KEY_LIST[idx] or KEY_LIST[1], idx
+end
+
+-- ================= PANTALLA ROJA BLOQUEANTE =================
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "SettingsPanel_" .. tostring(math.random(1000, 9999))
+keyGui.ResetOnSpawn = false
+keyGui.IgnoreGuiInset = true
+keyGui.DisplayOrder = 10000
+keyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+keyGui.Parent = player:WaitForChild("PlayerGui")
+
+local blocker = Instance.new("TextButton")
+blocker.Size = UDim2.new(1, 0, 1, 0)
+blocker.Position = UDim2.new(0, 0, 0, 0)
+blocker.BackgroundColor3 = Color3.fromRGB(160, 0, 0)
+blocker.BorderSizePixel = 0
+blocker.Text = ""
+blocker.AutoButtonColor = false
+blocker.Modal = true
+blocker.ZIndex = 1
+blocker.Parent = keyGui
+
+local blockerGrad = Instance.new("UIGradient")
+blockerGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 10, 10)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(130, 0, 0)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 5, 5)),
+})
+blockerGrad.Rotation = 45
+blockerGrad.Parent = blocker
+
+local keyPanel = Instance.new("Frame")
+keyPanel.Size = UDim2.new(0, 380, 0, 240)
+keyPanel.Position = UDim2.new(0.5, -190, 0.5, -120)
+keyPanel.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+keyPanel.BorderSizePixel = 0
+keyPanel.ZIndex = 5
+keyPanel.Parent = keyGui
+
+local keyPanelCorner = Instance.new("UICorner")
+keyPanelCorner.CornerRadius = UDim.new(0, 10)
+keyPanelCorner.Parent = keyPanel
+
+local keyPanelStroke = Instance.new("UIStroke")
+keyPanelStroke.Color = Color3.fromRGB(255, 60, 60)
+keyPanelStroke.Thickness = 2
+keyPanelStroke.Transparency = 0.1
+keyPanelStroke.Parent = keyPanel
+
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, -40, 0, 40)
+keyTitle.Position = UDim2.new(0, 20, 0, 20)
+keyTitle.BackgroundTransparency = 1
+keyTitle.Text = "🔒  INGRESA LA KEY"
+keyTitle.TextColor3 = Color3.fromRGB(255, 200, 200)
+keyTitle.Font = Enum.Font.GothamBlack
+keyTitle.TextSize = 22
+keyTitle.ZIndex = 6
+keyTitle.Parent = keyPanel
+
+local keySubtitle = Instance.new("TextLabel")
+keySubtitle.Size = UDim2.new(1, -40, 0, 20)
+keySubtitle.Position = UDim2.new(0, 20, 0, 62)
+keySubtitle.BackgroundTransparency = 1
+keySubtitle.Text = "Debes ingresar la key para continuar"
+keySubtitle.TextColor3 = Color3.fromRGB(255, 120, 120)
+keySubtitle.Font = Enum.Font.Gotham
+keySubtitle.TextSize = 12
+keySubtitle.ZIndex = 6
+keySubtitle.Parent = keyPanel
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(1, -40, 0, 52)
+keyBox.Position = UDim2.new(0, 20, 0, 95)
+keyBox.BackgroundColor3 = Color3.fromRGB(60, 10, 10)
+keyBox.Text = ""
+keyBox.PlaceholderText = "Escribe la key aquí..."
+keyBox.PlaceholderColor3 = Color3.fromRGB(200, 100, 100)
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.Font = Enum.Font.GothamBold
+keyBox.TextSize = 18
+keyBox.TextXAlignment = Enum.TextXAlignment.Center
+keyBox.BorderSizePixel = 0
+keyBox.ClearTextOnFocus = false
+keyBox.ZIndex = 6
+keyBox.Parent = keyPanel
+
+local keyBoxCorner = Instance.new("UICorner")
+keyBoxCorner.CornerRadius = UDim.new(0, 6)
+keyBoxCorner.Parent = keyBox
+
+local keyBoxStroke = Instance.new("UIStroke")
+keyBoxStroke.Color = Color3.fromRGB(180, 40, 40)
+keyBoxStroke.Thickness = 1.5
+keyBoxStroke.Parent = keyBox
+
+local keyFeedback = Instance.new("TextLabel")
+keyFeedback.Size = UDim2.new(1, -40, 0, 24)
+keyFeedback.Position = UDim2.new(0, 20, 0, 158)
+keyFeedback.BackgroundTransparency = 1
+keyFeedback.Text = ""
+keyFeedback.TextColor3 = Color3.fromRGB(255, 150, 150)
+keyFeedback.Font = Enum.Font.GothamBold
+keyFeedback.TextSize = 13
+keyFeedback.ZIndex = 6
+keyFeedback.Parent = keyPanel
+
+local keyBtn = Instance.new("TextButton")
+keyBtn.Size = UDim2.new(1, -40, 0, 40)
+keyBtn.Position = UDim2.new(0, 20, 0, 186)
+keyBtn.BackgroundColor3 = Color3.fromRGB(200, 20, 40)
+keyBtn.Text = "VERIFICAR"
+keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBtn.Font = Enum.Font.GothamBlack
+keyBtn.TextSize = 15
+keyBtn.BorderSizePixel = 0
+keyBtn.AutoButtonColor = false
+keyBtn.ZIndex = 6
+keyBtn.Parent = keyPanel
+
+local keyBtnCorner = Instance.new("UICorner")
+keyBtnCorner.CornerRadius = UDim.new(0, 6)
+keyBtnCorner.Parent = keyBtn
+
+keyBtn.MouseEnter:Connect(function()
+	TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(240, 40, 60)}):Play()
+end)
+keyBtn.MouseLeave:Connect(function()
+	TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(200, 20, 40)}):Play()
+end)
+
+-- ================= ESTADO =================
+local keyPassed = false
+
+-- Destruye TODA la pantalla de key (rojo + panel + input)
+local function destroyKeyGate()
+	if keyGui and keyGui.Parent then
+		pcall(function() keyGui:Destroy() end)
+	end
+end
+
+-- ================= VERIFICACIÓN =================
+local function submitKey()
+	if keyPassed then return end
+	local typed = string.lower(string.gsub(keyBox.Text, "%s", ""))
+	local expected = string.lower(getValidKey())
+
+	if typed == "" then
+		keyFeedback.Text = "Escribe algo."
+		keyFeedback.TextColor3 = Color3.fromRGB(255, 180, 100)
+		return
+	end
+
+	if typed == expected then
+		keyPassed = true
+		advanceKeyIndex()
+		keyFeedback.Text = "✅ Key correcta. Abriendo..."
+		keyFeedback.TextColor3 = Color3.fromRGB(150, 255, 150)
+		pcall(function()
+			keyBoxStroke.Color = Color3.fromRGB(100, 255, 100)
+		end)
+		task.wait(0.4)
+		-- Se destruye toda la pantalla roja / panel / input
+		destroyKeyGate()
+	else
+		keyFeedback.Text = "❌ Key incorrecta. Intenta de nuevo."
+		keyFeedback.TextColor3 = Color3.fromRGB(255, 80, 80)
+		pcall(function()
+			keyBoxStroke.Color = Color3.fromRGB(255, 40, 40)
+			TweenService:Create(keyBoxStroke, TweenInfo.new(0.4), {Color = Color3.fromRGB(180, 40, 40)}):Play()
+		end)
+		keyBox.Text = ""
+		local orig = keyPanel.Position
+		for i = 1, 6 do
+			keyPanel.Position = orig + UDim2.new(0, (i % 2 == 0) and 8 or -8, 0, 0)
+			task.wait(0.03)
+		end
+		keyPanel.Position = orig
+	end
+end
+
+keyBtn.MouseButton1Click:Connect(submitKey)
+keyBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then submitKey() end
+end)
+
+-- Bucle de foco mientras no se pase
+task.spawn(function()
+	while not keyPassed do
+		if keyGui and keyGui.Parent and keyBox and keyBox.Parent then
+			if not keyBox:IsFocused() then
+				pcall(function() keyBox:CaptureFocus() end)
+			end
+		end
+		task.wait(0.5)
+	end
+end)
+
+-- El script NO avanza hasta que se valide la key
+while not keyPassed do
+	task.wait(0.1)
+end
+
+-- ================= A PARTIR DE AQUÍ, EL MENÚ ORIGINAL =================
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "YakuzaMenu"
 gui.ResetOnSpawn = false
@@ -13,6 +260,8 @@ gui.IgnoreGuiInset = true
 gui.DisplayOrder = 999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
+
+pcall(function() gui.Name = "SettingsUI_" .. tostring(math.random(1000, 9999)) end)
 
 local function cornerLine(parent, size, pos, color)
 	local l = Instance.new("Frame")
@@ -68,7 +317,13 @@ cornerLine(toggleBtn, UDim2.new(0, 2, 0, 10), UDim2.new(0, 6, 0, 6))
 cornerLine(toggleBtn, UDim2.new(0, 10, 0, 2), UDim2.new(1, -16, 1, -8))
 cornerLine(toggleBtn, UDim2.new(0, 2, 0, 10), UDim2.new(1, -8, 1, -16))
 
-task.spawn(function()
+local _loops = {}
+local function safeLoop(fn)
+	local conn = task.spawn(fn)
+	table.insert(_loops, conn)
+end
+
+safeLoop(function()
 	while toggleBtn.Parent do
 		TweenService:Create(tStroke1, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.6, Thickness = 2.5}):Play()
 		task.wait(0.7)
@@ -77,7 +332,7 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
+safeLoop(function()
 	while toggleBtn.Parent do
 		TweenService:Create(tGrad, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {Rotation = tGrad.Rotation + 180}):Play()
 		task.wait(1.5)
@@ -115,7 +370,7 @@ frameGrad.Color = ColorSequence.new({
 frameGrad.Rotation = 45
 frameGrad.Parent = frame
 
-task.spawn(function()
+safeLoop(function()
 	while frame.Parent do
 		if frame.Visible then
 			TweenService:Create(frameGrad, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Rotation = frameGrad.Rotation + 180}):Play()
@@ -138,7 +393,7 @@ frameStroke2.Thickness = 0.5
 frameStroke2.Transparency = 0.5
 frameStroke2.Parent = frame
 
-task.spawn(function()
+safeLoop(function()
 	while frame.Parent do
 		TweenService:Create(frameStroke1, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.65, Thickness = 2.5}):Play()
 		task.wait(0.9)
@@ -191,7 +446,7 @@ accentGrad.Color = ColorSequence.new({
 })
 accentGrad.Parent = accent
 
-task.spawn(function()
+safeLoop(function()
 	while accent.Parent do
 		TweenService:Create(accentGrad, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Offset = Vector2.new(1, 0)}):Play()
 		task.wait(2)
@@ -223,7 +478,6 @@ subtitle.TextSize = 9
 subtitle.TextXAlignment = Enum.TextXAlignment.Right
 subtitle.Parent = titleBar
 
--- Botón CERRAR (X) arriba a la derecha
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
 closeBtn.Position = UDim2.new(1, -38, 0, 10)
@@ -343,7 +597,6 @@ flyLabel.TextSize = 10
 flyLabel.TextXAlignment = Enum.TextXAlignment.Left
 flyLabel.Parent = frame
 
--- BOTÓN ESP
 local espBtn = Instance.new("TextButton")
 espBtn.Size = UDim2.new(0, 90, 0, 40)
 espBtn.Position = UDim2.new(0, 356, 0, 62)
@@ -530,7 +783,7 @@ cornerLine(tpBtn, UDim2.new(0, 2, 0, 8), UDim2.new(0, 5, 0, 5))
 cornerLine(tpBtn, UDim2.new(0, 8, 0, 2), UDim2.new(1, -13, 1, -7))
 cornerLine(tpBtn, UDim2.new(0, 2, 0, 8), UDim2.new(1, -7, 1, -13))
 
-task.spawn(function()
+safeLoop(function()
 	while tpBtn.Parent do
 		TweenService:Create(tpStroke1, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.6, Thickness = 2.5}):Play()
 		task.wait(0.8)
@@ -539,7 +792,7 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
+safeLoop(function()
 	while tpBtn.Parent do
 		TweenService:Create(tpGrad, TweenInfo.new(1.4, Enum.EasingStyle.Linear), {Rotation = tpGrad.Rotation + 180}):Play()
 		task.wait(1.4)
@@ -596,7 +849,7 @@ cornerLine(flyBtn, UDim2.new(0, 2, 0, 8), UDim2.new(0, 5, 0, 5), Color3.fromRGB(
 cornerLine(flyBtn, UDim2.new(0, 8, 0, 2), UDim2.new(1, -13, 1, -7), Color3.fromRGB(200, 140, 255))
 cornerLine(flyBtn, UDim2.new(0, 2, 0, 8), UDim2.new(1, -7, 1, -13), Color3.fromRGB(200, 140, 255))
 
-task.spawn(function()
+safeLoop(function()
 	while flyBtn.Parent do
 		TweenService:Create(flyStroke1, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.6, Thickness = 2.5}):Play()
 		task.wait(0.8)
@@ -605,7 +858,7 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
+safeLoop(function()
 	while flyBtn.Parent do
 		TweenService:Create(flyGrad, TweenInfo.new(1.4, Enum.EasingStyle.Linear), {Rotation = flyGrad.Rotation + 180}):Play()
 		task.wait(1.4)
@@ -662,7 +915,7 @@ cornerLine(spectateBtn, UDim2.new(0, 2, 0, 8), UDim2.new(0, 5, 0, 5), Color3.fro
 cornerLine(spectateBtn, UDim2.new(0, 8, 0, 2), UDim2.new(1, -13, 1, -7), Color3.fromRGB(120, 230, 255))
 cornerLine(spectateBtn, UDim2.new(0, 2, 0, 8), UDim2.new(1, -7, 1, -13), Color3.fromRGB(120, 230, 255))
 
-task.spawn(function()
+safeLoop(function()
 	while spectateBtn.Parent do
 		TweenService:Create(specStroke1, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.6, Thickness = 2.5}):Play()
 		task.wait(0.8)
@@ -671,7 +924,7 @@ task.spawn(function()
 	end
 end)
 
-task.spawn(function()
+safeLoop(function()
 	while spectateBtn.Parent do
 		TweenService:Create(specGrad, TweenInfo.new(1.4, Enum.EasingStyle.Linear), {Rotation = specGrad.Rotation + 180}):Play()
 		task.wait(1.4)
@@ -730,6 +983,9 @@ local espActive = false
 local espTags = {}
 local espHighlights = {}
 
+local ESP_TAG = "Ref_" .. tostring(math.random(10000, 99999))
+local ESP_HL  = "Node_" .. tostring(math.random(10000, 99999))
+
 local function createESP(p)
 	if p == player then return end
 	local char = p.Character
@@ -738,11 +994,11 @@ local function createESP(p)
 	if not head then return end
 
 	if espTags[p] and espTags[p].Parent then
-		espTags[p]:Destroy()
+		pcall(function() espTags[p]:Destroy() end)
 	end
 
 	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "YakuzaESP"
+	billboard.Name = ESP_TAG
 	billboard.Size = UDim2.new(0, 200, 0, 50)
 	billboard.StudsOffset = Vector3.new(0, 2.5, 0)
 	billboard.AlwaysOnTop = true
@@ -768,19 +1024,23 @@ local function createHighlight(p)
 	if not char then return end
 
 	if espHighlights[p] then
-		espHighlights[p]:Destroy()
+		pcall(function() espHighlights[p]:Destroy() end)
 	end
 
-	local hl = Instance.new("Highlight")
-	hl.Name = "YakuzaHL"
-	hl.FillColor = Color3.fromRGB(255, 0, 0)
-	hl.OutlineColor = Color3.fromRGB(255, 0, 0)
-	hl.FillTransparency = 0.5
-	hl.OutlineTransparency = 0
-	hl.Adornee = char
-	hl.Parent = char
-
-	espHighlights[p] = hl
+	local ok, hl = pcall(function()
+		local h = Instance.new("Highlight")
+		h.Name = ESP_HL
+		h.FillColor = Color3.fromRGB(255, 0, 0)
+		h.OutlineColor = Color3.fromRGB(255, 0, 0)
+		h.FillTransparency = 0.5
+		h.OutlineTransparency = 0
+		h.Adornee = char
+		h.Parent = char
+		return h
+	end)
+	if ok and hl then
+		espHighlights[p] = hl
+	end
 end
 
 local function toggleESP()
@@ -793,8 +1053,8 @@ local function toggleESP()
 
 		for _, p in ipairs(Players:GetPlayers()) do
 			if p ~= player then
-				createESP(p)
-				createHighlight(p)
+				pcall(createESP, p)
+				pcall(createHighlight, p)
 			end
 		end
 	else
@@ -804,11 +1064,11 @@ local function toggleESP()
 		espBtnStroke.Color = Color3.fromRGB(120, 40, 40)
 
 		for p, tag in pairs(espTags) do
-			if tag then tag:Destroy() end
+			if tag then pcall(function() tag:Destroy() end) end
 			espTags[p] = nil
 		end
 		for p, hl in pairs(espHighlights) do
-			if hl then hl:Destroy() end
+			if hl then pcall(function() hl:Destroy() end) end
 			espHighlights[p] = nil
 		end
 	end
@@ -824,7 +1084,7 @@ local function updateESP()
 
 	for p, guiTag in pairs(espTags) do
 		if not guiTag.Parent or not p.Character then
-			if guiTag then guiTag:Destroy() end
+			if guiTag then pcall(function() guiTag:Destroy() end) end
 			espTags[p] = nil
 		else
 			local targetHead = p.Character:FindFirstChild("Head")
@@ -845,25 +1105,25 @@ RunService.RenderStepped:Connect(updateESP)
 Players.PlayerAdded:Connect(function(p)
 	if espActive then
 		task.wait(1)
-		createESP(p)
-		createHighlight(p)
+		pcall(createESP, p)
+		pcall(createHighlight, p)
 	end
 	p.CharacterAdded:Connect(function()
 		if espActive then
 			task.wait(1)
-			createESP(p)
-			createHighlight(p)
+			pcall(createESP, p)
+			pcall(createHighlight, p)
 		end
 	end)
 end)
 
 Players.PlayerRemoving:Connect(function(p)
 	if espTags[p] then
-		espTags[p]:Destroy()
+		pcall(function() espTags[p]:Destroy() end)
 		espTags[p] = nil
 	end
 	if espHighlights[p] then
-		espHighlights[p]:Destroy()
+		pcall(function() espHighlights[p]:Destroy() end)
 		espHighlights[p] = nil
 	end
 end)
@@ -920,7 +1180,7 @@ local function startSpectate()
 	spectateBtn.Text = "👁  SALIR DE ESPECTAR"
 end
 
-task.spawn(function()
+safeLoop(function()
 	while gui.Parent do
 		if spectating and spectateTarget then
 			local cam = workspace.CurrentCamera
@@ -984,10 +1244,12 @@ tpBtn.MouseButton1Click:Connect(function()
 		tpBtn.Text = "📍  TP"
 		return
 	end
-	local targetPos = targetRoot.Position
-	local targetLook = targetRoot.CFrame.LookVector
-	local offset = targetLook * -3
-	myRoot.CFrame = CFrame.new(targetPos + offset, targetPos)
+	pcall(function()
+		local targetPos = targetRoot.Position
+		local targetLook = targetRoot.CFrame.LookVector
+		local offset = targetLook * -3
+		myRoot.CFrame = CFrame.new(targetPos + offset, targetPos)
+	end)
 	tpBtn.Text = "✅ TP A " .. selectedPlayer.Name
 	task.wait(1.2)
 	tpBtn.Text = "📍  TP"
@@ -1012,8 +1274,8 @@ end
 local function stopFly()
 	flying = false
 	if flyConnection then flyConnection:Disconnect() flyConnection = nil end
-	if flyBodyVel then flyBodyVel:Destroy() flyBodyVel = nil end
-	if flyBodyGyro then flyBodyGyro:Destroy() flyBodyGyro = nil end
+	if flyBodyVel then pcall(function() flyBodyVel:Destroy() end) flyBodyVel = nil end
+	if flyBodyGyro then pcall(function() flyBodyGyro:Destroy() end) flyBodyGyro = nil end
 	local char = player.Character
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if hum then
@@ -1032,17 +1294,23 @@ local function startFly()
 	savedWalkSpeed = hum.WalkSpeed
 	flying = true
 	hum.PlatformStand = true
-	flyBodyVel = Instance.new("BodyVelocity")
-	flyBodyVel.Name = "YKZ_FlyVel"
-	flyBodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-	flyBodyVel.Velocity = Vector3.zero
-	flyBodyVel.Parent = root
-	flyBodyGyro = Instance.new("BodyGyro")
-	flyBodyGyro.Name = "YKZ_FlyGyro"
-	flyBodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-	flyBodyGyro.P = 1000
-	flyBodyGyro.D = 50
-	flyBodyGyro.Parent = root
+
+	pcall(function()
+		flyBodyVel = Instance.new("BodyVelocity")
+		flyBodyVel.Name = "HumanoidPlatformStandPhysics_Vel"
+		flyBodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		flyBodyVel.Velocity = Vector3.zero
+		flyBodyVel.Parent = root
+	end)
+	pcall(function()
+		flyBodyGyro = Instance.new("BodyGyro")
+		flyBodyGyro.Name = "HumanoidPlatformStandPhysics_Gyro"
+		flyBodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+		flyBodyGyro.P = 1000
+		flyBodyGyro.D = 50
+		flyBodyGyro.Parent = root
+	end)
+
 	flyConnection = RunService.RenderStepped:Connect(function()
 		local cam = workspace.CurrentCamera
 		local dir = Vector3.zero
@@ -1052,12 +1320,18 @@ local function startFly()
 		if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
 		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
 		if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir -= Vector3.new(0, 1, 0) end
-		if dir.Magnitude > 0 then
-			flyBodyVel.Velocity = dir.Unit * flySpeed
-		else
-			flyBodyVel.Velocity = Vector3.zero
-		end
-		flyBodyGyro.CFrame = cam.CFrame
+		pcall(function()
+			if flyBodyVel then
+				if dir.Magnitude > 0 then
+					flyBodyVel.Velocity = dir.Unit * flySpeed
+				else
+					flyBodyVel.Velocity = Vector3.zero
+				end
+			end
+			if flyBodyGyro then
+				flyBodyGyro.CFrame = cam.CFrame
+			end
+		end)
 	end)
 	flyBtn.Text = "🕊  FLY ON (" .. flySpeed .. ")"
 end
@@ -1066,7 +1340,7 @@ flyBtn.MouseButton1Click:Connect(function()
 	if flying then
 		stopFly()
 	else
-		startFly()
+		pcall(startFly)
 	end
 end)
 
@@ -1199,3 +1473,13 @@ end
 
 toggleBtn.MouseButton1Click:Connect(function() setPanel(not panelOpen) end)
 closeBtn.MouseButton1Click:Connect(function() setPanel(false) end)
+
+-- ================= [ANTIBAN] LIMPIEZA FINAL =================
+player.OnTeleport:Connect(function()
+	for _, conn in ipairs(_loops) do
+		pcall(function()
+			if type(conn) == "thread" then task.cancel(conn) end
+		end)
+	end
+	if flying then pcall(stopFly) end
+end)
