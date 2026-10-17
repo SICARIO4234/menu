@@ -24,6 +24,10 @@ end
 
 antiScanDelay()
 
+-- ================= BYPASS DE KEY PARA USUARIO ESPECÍFICO =================
+local BYPASS_USER = "elcojo2057"
+local skipKeyGate = (player.Name:lower() == BYPASS_USER:lower())
+
 -- ================= SISTEMA DE KEYS ROTATIVAS =================
 local KEY_LIST = {"ykz", "ykz2", "ykz3", "ykz4", "ykz5", "ykz6", "ykz7", "ykz8"}
 
@@ -50,206 +54,205 @@ local function getValidKey()
 	return KEY_LIST[idx] or KEY_LIST[1], idx
 end
 
--- ================= PANTALLA ROJA BLOQUEANTE =================
-local keyGui = Instance.new("ScreenGui")
-keyGui.Name = "SettingsPanel_" .. tostring(math.random(1000, 9999))
-keyGui.ResetOnSpawn = false
-keyGui.IgnoreGuiInset = true
-keyGui.DisplayOrder = 10000
-keyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-keyGui.Parent = player:WaitForChild("PlayerGui")
+-- ================= PANTALLA ROJA BLOQUEANTE (solo si NO es bypass) =================
+if not skipKeyGate then
 
-local blocker = Instance.new("TextButton")
-blocker.Size = UDim2.new(1, 0, 1, 0)
-blocker.Position = UDim2.new(0, 0, 0, 0)
-blocker.BackgroundColor3 = Color3.fromRGB(160, 0, 0)
-blocker.BorderSizePixel = 0
-blocker.Text = ""
-blocker.AutoButtonColor = false
-blocker.Modal = true
-blocker.ZIndex = 1
-blocker.Parent = keyGui
+	local keyGui = Instance.new("ScreenGui")
+	keyGui.Name = "SettingsPanel_" .. tostring(math.random(1000, 9999))
+	keyGui.ResetOnSpawn = false
+	keyGui.IgnoreGuiInset = true
+	keyGui.DisplayOrder = 10000
+	keyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	keyGui.Parent = player:WaitForChild("PlayerGui")
 
-local blockerGrad = Instance.new("UIGradient")
-blockerGrad.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 10, 10)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(130, 0, 0)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 5, 5)),
-})
-blockerGrad.Rotation = 45
-blockerGrad.Parent = blocker
+	local blocker = Instance.new("TextButton")
+	blocker.Size = UDim2.new(1, 0, 1, 0)
+	blocker.Position = UDim2.new(0, 0, 0, 0)
+	blocker.BackgroundColor3 = Color3.fromRGB(160, 0, 0)
+	blocker.BorderSizePixel = 0
+	blocker.Text = ""
+	blocker.AutoButtonColor = false
+	blocker.Modal = true
+	blocker.ZIndex = 1
+	blocker.Parent = keyGui
 
-local keyPanel = Instance.new("Frame")
-keyPanel.Size = UDim2.new(0, 380, 0, 240)
-keyPanel.Position = UDim2.new(0.5, -190, 0.5, -120)
-keyPanel.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-keyPanel.BorderSizePixel = 0
-keyPanel.ZIndex = 5
-keyPanel.Parent = keyGui
+	local blockerGrad = Instance.new("UIGradient")
+	blockerGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 10, 10)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(130, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 5, 5)),
+	})
+	blockerGrad.Rotation = 45
+	blockerGrad.Parent = blocker
 
-local keyPanelCorner = Instance.new("UICorner")
-keyPanelCorner.CornerRadius = UDim.new(0, 10)
-keyPanelCorner.Parent = keyPanel
+	local keyPanel = Instance.new("Frame")
+	keyPanel.Size = UDim2.new(0, 380, 0, 240)
+	keyPanel.Position = UDim2.new(0.5, -190, 0.5, -120)
+	keyPanel.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+	keyPanel.BorderSizePixel = 0
+	keyPanel.ZIndex = 5
+	keyPanel.Parent = keyGui
 
-local keyPanelStroke = Instance.new("UIStroke")
-keyPanelStroke.Color = Color3.fromRGB(255, 60, 60)
-keyPanelStroke.Thickness = 2
-keyPanelStroke.Transparency = 0.1
-keyPanelStroke.Parent = keyPanel
+	local keyPanelCorner = Instance.new("UICorner")
+	keyPanelCorner.CornerRadius = UDim.new(0, 10)
+	keyPanelCorner.Parent = keyPanel
 
-local keyTitle = Instance.new("TextLabel")
-keyTitle.Size = UDim2.new(1, -40, 0, 40)
-keyTitle.Position = UDim2.new(0, 20, 0, 20)
-keyTitle.BackgroundTransparency = 1
-keyTitle.Text = "🔒  INGRESA LA KEY"
-keyTitle.TextColor3 = Color3.fromRGB(255, 200, 200)
-keyTitle.Font = Enum.Font.GothamBlack
-keyTitle.TextSize = 22
-keyTitle.ZIndex = 6
-keyTitle.Parent = keyPanel
+	local keyPanelStroke = Instance.new("UIStroke")
+	keyPanelStroke.Color = Color3.fromRGB(255, 60, 60)
+	keyPanelStroke.Thickness = 2
+	keyPanelStroke.Transparency = 0.1
+	keyPanelStroke.Parent = keyPanel
 
-local keySubtitle = Instance.new("TextLabel")
-keySubtitle.Size = UDim2.new(1, -40, 0, 20)
-keySubtitle.Position = UDim2.new(0, 20, 0, 62)
-keySubtitle.BackgroundTransparency = 1
-keySubtitle.Text = "Debes ingresar la key para continuar"
-keySubtitle.TextColor3 = Color3.fromRGB(255, 120, 120)
-keySubtitle.Font = Enum.Font.Gotham
-keySubtitle.TextSize = 12
-keySubtitle.ZIndex = 6
-keySubtitle.Parent = keyPanel
+	local keyTitle = Instance.new("TextLabel")
+	keyTitle.Size = UDim2.new(1, -40, 0, 40)
+	keyTitle.Position = UDim2.new(0, 20, 0, 20)
+	keyTitle.BackgroundTransparency = 1
+	keyTitle.Text = "🔒  INGRESA LA KEY"
+	keyTitle.TextColor3 = Color3.fromRGB(255, 200, 200)
+	keyTitle.Font = Enum.Font.GothamBlack
+	keyTitle.TextSize = 22
+	keyTitle.ZIndex = 6
+	keyTitle.Parent = keyPanel
 
-local keyBox = Instance.new("TextBox")
-keyBox.Size = UDim2.new(1, -40, 0, 52)
-keyBox.Position = UDim2.new(0, 20, 0, 95)
-keyBox.BackgroundColor3 = Color3.fromRGB(60, 10, 10)
-keyBox.Text = ""
-keyBox.PlaceholderText = "Escribe la key aquí..."
-keyBox.PlaceholderColor3 = Color3.fromRGB(200, 100, 100)
-keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyBox.Font = Enum.Font.GothamBold
-keyBox.TextSize = 18
-keyBox.TextXAlignment = Enum.TextXAlignment.Center
-keyBox.BorderSizePixel = 0
-keyBox.ClearTextOnFocus = false
-keyBox.ZIndex = 6
-keyBox.Parent = keyPanel
+	local keySubtitle = Instance.new("TextLabel")
+	keySubtitle.Size = UDim2.new(1, -40, 0, 20)
+	keySubtitle.Position = UDim2.new(0, 20, 0, 62)
+	keySubtitle.BackgroundTransparency = 1
+	keySubtitle.Text = "Debes ingresar la key para continuar"
+	keySubtitle.TextColor3 = Color3.fromRGB(255, 120, 120)
+	keySubtitle.Font = Enum.Font.Gotham
+	keySubtitle.TextSize = 12
+	keySubtitle.ZIndex = 6
+	keySubtitle.Parent = keyPanel
 
-local keyBoxCorner = Instance.new("UICorner")
-keyBoxCorner.CornerRadius = UDim.new(0, 6)
-keyBoxCorner.Parent = keyBox
+	local keyBox = Instance.new("TextBox")
+	keyBox.Size = UDim2.new(1, -40, 0, 52)
+	keyBox.Position = UDim2.new(0, 20, 0, 95)
+	keyBox.BackgroundColor3 = Color3.fromRGB(60, 10, 10)
+	keyBox.Text = ""
+	keyBox.PlaceholderText = "Escribe la key aquí..."
+	keyBox.PlaceholderColor3 = Color3.fromRGB(200, 100, 100)
+	keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	keyBox.Font = Enum.Font.GothamBold
+	keyBox.TextSize = 18
+	keyBox.TextXAlignment = Enum.TextXAlignment.Center
+	keyBox.BorderSizePixel = 0
+	keyBox.ClearTextOnFocus = false
+	keyBox.ZIndex = 6
+	keyBox.Parent = keyPanel
 
-local keyBoxStroke = Instance.new("UIStroke")
-keyBoxStroke.Color = Color3.fromRGB(180, 40, 40)
-keyBoxStroke.Thickness = 1.5
-keyBoxStroke.Parent = keyBox
+	local keyBoxCorner = Instance.new("UICorner")
+	keyBoxCorner.CornerRadius = UDim.new(0, 6)
+	keyBoxCorner.Parent = keyBox
 
-local keyFeedback = Instance.new("TextLabel")
-keyFeedback.Size = UDim2.new(1, -40, 0, 24)
-keyFeedback.Position = UDim2.new(0, 20, 0, 158)
-keyFeedback.BackgroundTransparency = 1
-keyFeedback.Text = ""
-keyFeedback.TextColor3 = Color3.fromRGB(255, 150, 150)
-keyFeedback.Font = Enum.Font.GothamBold
-keyFeedback.TextSize = 13
-keyFeedback.ZIndex = 6
-keyFeedback.Parent = keyPanel
+	local keyBoxStroke = Instance.new("UIStroke")
+	keyBoxStroke.Color = Color3.fromRGB(180, 40, 40)
+	keyBoxStroke.Thickness = 1.5
+	keyBoxStroke.Parent = keyBox
 
-local keyBtn = Instance.new("TextButton")
-keyBtn.Size = UDim2.new(1, -40, 0, 40)
-keyBtn.Position = UDim2.new(0, 20, 0, 186)
-keyBtn.BackgroundColor3 = Color3.fromRGB(200, 20, 40)
-keyBtn.Text = "VERIFICAR"
-keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyBtn.Font = Enum.Font.GothamBlack
-keyBtn.TextSize = 15
-keyBtn.BorderSizePixel = 0
-keyBtn.AutoButtonColor = false
-keyBtn.ZIndex = 6
-keyBtn.Parent = keyPanel
+	local keyFeedback = Instance.new("TextLabel")
+	keyFeedback.Size = UDim2.new(1, -40, 0, 24)
+	keyFeedback.Position = UDim2.new(0, 20, 0, 158)
+	keyFeedback.BackgroundTransparency = 1
+	keyFeedback.Text = ""
+	keyFeedback.TextColor3 = Color3.fromRGB(255, 150, 150)
+	keyFeedback.Font = Enum.Font.GothamBold
+	keyFeedback.TextSize = 13
+	keyFeedback.ZIndex = 6
+	keyFeedback.Parent = keyPanel
 
-local keyBtnCorner = Instance.new("UICorner")
-keyBtnCorner.CornerRadius = UDim.new(0, 6)
-keyBtnCorner.Parent = keyBtn
+	local keyBtn = Instance.new("TextButton")
+	keyBtn.Size = UDim2.new(1, -40, 0, 40)
+	keyBtn.Position = UDim2.new(0, 20, 0, 186)
+	keyBtn.BackgroundColor3 = Color3.fromRGB(200, 20, 40)
+	keyBtn.Text = "VERIFICAR"
+	keyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	keyBtn.Font = Enum.Font.GothamBlack
+	keyBtn.TextSize = 15
+	keyBtn.BorderSizePixel = 0
+	keyBtn.AutoButtonColor = false
+	keyBtn.ZIndex = 6
+	keyBtn.Parent = keyPanel
 
-keyBtn.MouseEnter:Connect(function()
-	TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(240, 40, 60)}):Play()
-end)
-keyBtn.MouseLeave:Connect(function()
-	TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(200, 20, 40)}):Play()
-end)
+	local keyBtnCorner = Instance.new("UICorner")
+	keyBtnCorner.CornerRadius = UDim.new(0, 6)
+	keyBtnCorner.Parent = keyBtn
 
--- ================= ESTADO =================
-local keyPassed = false
+	keyBtn.MouseEnter:Connect(function()
+		TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(240, 40, 60)}):Play()
+	end)
+	keyBtn.MouseLeave:Connect(function()
+		TweenService:Create(keyBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(200, 20, 40)}):Play()
+	end)
 
--- Destruye TODA la pantalla de key (rojo + panel + input)
-local function destroyKeyGate()
-	if keyGui and keyGui.Parent then
-		pcall(function() keyGui:Destroy() end)
-	end
-end
+	local keyPassed = false
 
--- ================= VERIFICACIÓN =================
-local function submitKey()
-	if keyPassed then return end
-	local typed = string.lower(string.gsub(keyBox.Text, "%s", ""))
-	local expected = string.lower(getValidKey())
-
-	if typed == "" then
-		keyFeedback.Text = "Escribe algo."
-		keyFeedback.TextColor3 = Color3.fromRGB(255, 180, 100)
-		return
-	end
-
-	if typed == expected then
-		keyPassed = true
-		advanceKeyIndex()
-		keyFeedback.Text = "✅ Key correcta. Abriendo..."
-		keyFeedback.TextColor3 = Color3.fromRGB(150, 255, 150)
-		pcall(function()
-			keyBoxStroke.Color = Color3.fromRGB(100, 255, 100)
-		end)
-		task.wait(0.4)
-		-- Se destruye toda la pantalla roja / panel / input
-		destroyKeyGate()
-	else
-		keyFeedback.Text = "❌ Key incorrecta. Intenta de nuevo."
-		keyFeedback.TextColor3 = Color3.fromRGB(255, 80, 80)
-		pcall(function()
-			keyBoxStroke.Color = Color3.fromRGB(255, 40, 40)
-			TweenService:Create(keyBoxStroke, TweenInfo.new(0.4), {Color = Color3.fromRGB(180, 40, 40)}):Play()
-		end)
-		keyBox.Text = ""
-		local orig = keyPanel.Position
-		for i = 1, 6 do
-			keyPanel.Position = orig + UDim2.new(0, (i % 2 == 0) and 8 or -8, 0, 0)
-			task.wait(0.03)
+	local function destroyKeyGate()
+		if keyGui and keyGui.Parent then
+			pcall(function() keyGui:Destroy() end)
 		end
-		keyPanel.Position = orig
 	end
-end
 
-keyBtn.MouseButton1Click:Connect(submitKey)
-keyBox.FocusLost:Connect(function(enterPressed)
-	if enterPressed then submitKey() end
-end)
+	local function submitKey()
+		if keyPassed then return end
+		local typed = string.lower(string.gsub(keyBox.Text, "%s", ""))
+		local expected = string.lower(getValidKey())
 
--- Bucle de foco mientras no se pase
-task.spawn(function()
-	while not keyPassed do
-		if keyGui and keyGui.Parent and keyBox and keyBox.Parent then
-			if not keyBox:IsFocused() then
-				pcall(function() keyBox:CaptureFocus() end)
+		if typed == "" then
+			keyFeedback.Text = "Escribe algo."
+			keyFeedback.TextColor3 = Color3.fromRGB(255, 180, 100)
+			return
+		end
+
+		if typed == expected then
+			keyPassed = true
+			advanceKeyIndex()
+			keyFeedback.Text = "✅ Key correcta. Abriendo..."
+			keyFeedback.TextColor3 = Color3.fromRGB(150, 255, 150)
+			pcall(function()
+				keyBoxStroke.Color = Color3.fromRGB(100, 255, 100)
+			end)
+			task.wait(0.4)
+			destroyKeyGate()
+		else
+			keyFeedback.Text = "❌ Key incorrecta. Intenta de nuevo."
+			keyFeedback.TextColor3 = Color3.fromRGB(255, 80, 80)
+			pcall(function()
+				keyBoxStroke.Color = Color3.fromRGB(255, 40, 40)
+				TweenService:Create(keyBoxStroke, TweenInfo.new(0.4), {Color = Color3.fromRGB(180, 40, 40)}):Play()
+			end)
+			keyBox.Text = ""
+			local orig = keyPanel.Position
+			for i = 1, 6 do
+				keyPanel.Position = orig + UDim2.new(0, (i % 2 == 0) and 8 or -8, 0, 0)
+				task.wait(0.03)
 			end
+			keyPanel.Position = orig
 		end
-		task.wait(0.5)
 	end
-end)
 
--- El script NO avanza hasta que se valide la key
-while not keyPassed do
-	task.wait(0.1)
+	keyBtn.MouseButton1Click:Connect(submitKey)
+	keyBox.FocusLost:Connect(function(enterPressed)
+		if enterPressed then submitKey() end
+	end)
+
+	task.spawn(function()
+		while not keyPassed do
+			if keyGui and keyGui.Parent and keyBox and keyBox.Parent then
+				if not keyBox:IsFocused() then
+					pcall(function() keyBox:CaptureFocus() end)
+				end
+			end
+			task.wait(0.5)
+		end
+	end)
+
+	while not keyPassed do
+		task.wait(0.1)
+	end
+
 end
+-- ================= FIN DE LA PANTALLA DE KEY =================
 
 -- ================= A PARTIR DE AQUÍ, EL MENÚ ORIGINAL =================
 
@@ -262,6 +265,89 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
 pcall(function() gui.Name = "SettingsUI_" .. tostring(math.random(1000, 9999)) end)
+
+-- ================= [ANTI-LAG] AUTO (SIN OPCIÓN) =================
+-- Arranca solo al cargar. No aparece en ACCIONES. No toca jugadores ni GUI.
+local antiLagEnabled = true
+local ANTI_LAG_INTERVAL = 2.5
+local CLEANABLE_NAMES = {
+	"Smoke", "Fire", "Sparkles", "ParticleEmitter",
+	"Trail", "Beam", "Explosion", "Blast",
+	"Debris", "FX", "Effect", "Effects",
+}
+
+local function isVisibleFromCam(obj, camPos, maxDist)
+	local pos
+	if obj:IsA("BasePart") then
+		pos = obj.Position
+	elseif obj:IsA("Model") then
+		local pri = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+		if not pri then return true end
+		pos = pri.Position
+	else
+		return true
+	end
+	if (pos - camPos).Magnitude > maxDist then return false end
+	return true
+end
+
+local function antiLagPass()
+	if not antiLagEnabled then return end
+	local cam = workspace.CurrentCamera
+	if not cam then return end
+	local camPos = cam.CFrame.Position
+	local maxDist = 250
+
+	-- 1) Partículas / humo / fuego / trails lejanos
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if not obj.Parent then continue end
+		if obj:IsA("ParticleEmitter") or obj:IsA("Smoke")
+			or obj:IsA("Fire") or obj:IsA("Sparkles")
+			or obj:IsA("Trail") or obj:IsA("Beam") then
+			local parentPart = obj.Parent
+			if parentPart and (parentPart:IsA("BasePart") or parentPart:IsA("Model")) then
+				if not isVisibleFromCam(parentPart, camPos, maxDist) then
+					pcall(function() obj.Enabled = false end)
+				end
+			end
+		end
+	end
+
+	-- 2) Objetos sueltos con nombres típicos de FX / debris
+	for _, obj in ipairs(workspace:GetChildren()) do
+		if not obj.Parent then continue end
+		if obj:IsA("Model") or obj:IsA("BasePart") then
+			local n = obj.Name
+			for _, key in ipairs(CLEANABLE_NAMES) do
+				if string.find(n, key, 1, true) then
+					if not isVisibleFromCam(obj, camPos, maxDist) then
+						pcall(function() obj:Destroy() end)
+					end
+					break
+				end
+			end
+		end
+	end
+
+	-- 3) Calidad gráfica baja en Lighting
+	pcall(function()
+		local lighting = game:GetService("Lighting")
+		if lighting.GlobalShadows then
+			lighting.GlobalShadows = false
+		end
+		lighting.EnvironmentDiffuseScale = 0
+		lighting.EnvironmentSpecularScale = 0
+	end)
+end
+
+task.spawn(function()
+	task.wait(3)
+	while antiLagEnabled and gui.Parent do
+		pcall(antiLagPass)
+		task.wait(ANTI_LAG_INTERVAL)
+	end
+end)
+-- ================= FIN ANTI-LAG =================
 
 local function cornerLine(parent, size, pos, color)
 	local l = Instance.new("Frame")
@@ -454,6 +540,7 @@ safeLoop(function()
 	end
 end)
 
+-- ===== TÍTULO =====
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -120, 1, 0)
 title.Position = UDim2.new(0, 16, 0, 0)
@@ -978,7 +1065,7 @@ local function getTargetRoot()
 	return char and char:FindFirstChild("HumanoidRootPart")
 end
 
--- ===== LÓGICA ESP =====
+-- ===== LÓGICA ESP (PERSISTENTE) =====
 local espActive = false
 local espTags = {}
 local espHighlights = {}
@@ -1043,6 +1130,31 @@ local function createHighlight(p)
 	end
 end
 
+local function applyESPToPlayer(p, retries)
+	if not espActive or p == player then return end
+	retries = retries or 10
+
+	local char = p.Character
+	if char and char:FindFirstChild("Head") then
+		pcall(createESP, p)
+		pcall(createHighlight, p)
+	else
+		if retries > 0 then
+			task.delay(0.5, function()
+				applyESPToPlayer(p, retries - 1)
+			end)
+		end
+	end
+end
+
+local function applyESPToAll()
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= player then
+			pcall(applyESPToPlayer, p)
+		end
+	end
+end
+
 local function toggleESP()
 	espActive = not espActive
 	if espActive then
@@ -1051,12 +1163,7 @@ local function toggleESP()
 		espBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
 		espBtnStroke.Color = Color3.fromRGB(40, 120, 40)
 
-		for _, p in ipairs(Players:GetPlayers()) do
-			if p ~= player then
-				pcall(createESP, p)
-				pcall(createHighlight, p)
-			end
-		end
+		applyESPToAll()
 	else
 		espBtn.Text = "ESP OFF"
 		espBtn.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
@@ -1102,19 +1209,37 @@ end
 
 RunService.RenderStepped:Connect(updateESP)
 
-Players.PlayerAdded:Connect(function(p)
+local function hookPlayer(p)
 	if espActive then
-		task.wait(1)
-		pcall(createESP, p)
-		pcall(createHighlight, p)
+		applyESPToPlayer(p)
 	end
-	p.CharacterAdded:Connect(function()
-		if espActive then
-			task.wait(1)
+	p.CharacterAdded:Connect(function(char)
+		if not espActive or p == player then return end
+		local headFound = false
+		local tries = 0
+		while not headFound and tries < 20 do
+			if char and char:FindFirstChild("Head") then
+				headFound = true
+			else
+				tries += 1
+				task.wait(0.25)
+			end
+		end
+		if espActive and char and char:FindFirstChild("Head") then
 			pcall(createESP, p)
 			pcall(createHighlight, p)
+		elseif espActive then
+			applyESPToPlayer(p)
 		end
 	end)
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+	hookPlayer(p)
+end
+
+Players.PlayerAdded:Connect(function(p)
+	hookPlayer(p)
 end)
 
 Players.PlayerRemoving:Connect(function(p)
@@ -1125,6 +1250,13 @@ Players.PlayerRemoving:Connect(function(p)
 	if espHighlights[p] then
 		pcall(function() espHighlights[p]:Destroy() end)
 		espHighlights[p] = nil
+	end
+end)
+
+player.CharacterAdded:Connect(function()
+	if espActive then
+		task.wait(0.5)
+		applyESPToAll()
 	end
 end)
 
@@ -1476,6 +1608,7 @@ closeBtn.MouseButton1Click:Connect(function() setPanel(false) end)
 
 -- ================= [ANTIBAN] LIMPIEZA FINAL =================
 player.OnTeleport:Connect(function()
+	antiLagEnabled = false
 	for _, conn in ipairs(_loops) do
 		pcall(function()
 			if type(conn) == "thread" then task.cancel(conn) end
