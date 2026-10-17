@@ -267,7 +267,6 @@ gui.Parent = player:WaitForChild("PlayerGui")
 pcall(function() gui.Name = "SettingsUI_" .. tostring(math.random(1000, 9999)) end)
 
 -- ================= [ANTI-LAG] AUTO (SIN OPCIÓN) =================
--- Arranca solo al cargar. No aparece en ACCIONES. No toca jugadores ni GUI.
 local antiLagEnabled = true
 local ANTI_LAG_INTERVAL = 2.5
 local CLEANABLE_NAMES = {
@@ -298,7 +297,6 @@ local function antiLagPass()
 	local camPos = cam.CFrame.Position
 	local maxDist = 250
 
-	-- 1) Partículas / humo / fuego / trails lejanos
 	for _, obj in ipairs(workspace:GetDescendants()) do
 		if not obj.Parent then continue end
 		if obj:IsA("ParticleEmitter") or obj:IsA("Smoke")
@@ -313,7 +311,6 @@ local function antiLagPass()
 		end
 	end
 
-	-- 2) Objetos sueltos con nombres típicos de FX / debris
 	for _, obj in ipairs(workspace:GetChildren()) do
 		if not obj.Parent then continue end
 		if obj:IsA("Model") or obj:IsA("BasePart") then
@@ -329,7 +326,6 @@ local function antiLagPass()
 		end
 	end
 
-	-- 3) Calidad gráfica baja en Lighting
 	pcall(function()
 		local lighting = game:GetService("Lighting")
 		if lighting.GlobalShadows then
@@ -348,6 +344,133 @@ task.spawn(function()
 	end
 end)
 -- ================= FIN ANTI-LAG =================
+
+-- ================= [BAJO FPS] TEXTURAS MÍNIMAS (RESPETA CHARACTERS) =================
+local lowFpsActive = false
+local lowFpsSaved = {}
+
+local function saveProp(obj, prop)
+	local ok, val = pcall(function() return obj[prop] end)
+	if ok then
+		lowFpsSaved[obj] = lowFpsSaved[obj] or {}
+		if lowFpsSaved[obj][prop] == nil then
+			lowFpsSaved[obj][prop] = val
+		end
+	end
+end
+
+local function isInsideCharacter(obj)
+	local parent = obj
+	while parent and parent ~= workspace do
+		if parent:IsA("Model") and parent:FindFirstChildOfClass("Humanoid") then
+			return true
+		end
+		parent = parent.Parent
+	end
+	return false
+end
+
+local function restoreAllLowFps()
+	for obj, props in pairs(lowFpsSaved) do
+		if obj and obj.Parent then
+			for prop, val in pairs(props) do
+				pcall(function() obj[prop] = val end)
+			end
+		end
+	end
+	lowFpsSaved = {}
+	pcall(function()
+		local ms = game:GetService("MaterialService")
+		ms.Use2022Materials = true
+	end)
+	pcall(function()
+		local lighting = game:GetService("Lighting")
+		lighting.GlobalShadows = true
+		lighting.EnvironmentDiffuseScale = 1
+		lighting.EnvironmentSpecularScale = 1
+	end)
+end
+
+local function applyLowFps()
+	pcall(function()
+		local ms = game:GetService("MaterialService")
+		ms.Use2022Materials = false
+		ms.ForceTextureQuality = Enum.TextureQuality.Low
+	end)
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if not obj.Parent then continue end
+		if isInsideCharacter(obj) then continue end
+
+		if obj:IsA("Texture") then
+			saveProp(obj, "Texture")
+			saveProp(obj, "Transparency")
+			pcall(function()
+				obj.Texture = ""
+				obj.Transparency = 1
+			end)
+		elseif obj:IsA("Decal") then
+			saveProp(obj, "Texture")
+			saveProp(obj, "Transparency")
+			pcall(function()
+				obj.Texture = ""
+				obj.Transparency = 1
+			end)
+		elseif obj:IsA("SurfaceAppearance") then
+			pcall(function()
+				obj.ColorMap = nil
+				obj.NormalMap = nil
+				obj.RoughnessMap = nil
+				obj.MetalnessMap = nil
+			end)
+		elseif obj:IsA("MeshPart") then
+			saveProp(obj, "RenderFidelity")
+			saveProp(obj, "CollisionFidelity")
+			pcall(function()
+				obj.RenderFidelity = Enum.RenderFidelity.Performance
+				obj.CollisionFidelity = Enum.CollisionFidelity.Box
+			end)
+		elseif obj:IsA("BasePart") then
+			local hasTexture = obj:FindFirstChildOfClass("Texture")
+				or obj:FindFirstChildOfClass("Decal")
+				or obj:FindFirstChildOfClass("SurfaceAppearance")
+			if not hasTexture then
+				saveProp(obj, "Material")
+				pcall(function()
+					if obj.Material ~= Enum.Material.SmoothPlastic then
+						obj.Material = Enum.Material.SmoothPlastic
+					end
+				end)
+			end
+		end
+	end
+
+	pcall(function()
+		local terrain = workspace:FindFirstChildOfClass("Terrain")
+		if terrain then
+			saveProp(terrain, "Decoration")
+			terrain.Decoration = false
+		end
+	end)
+
+	pcall(function()
+		local lighting = game:GetService("Lighting")
+		lighting.GlobalShadows = false
+		lighting.EnvironmentDiffuseScale = 0
+		lighting.EnvironmentSpecularScale = 0
+	end)
+end
+
+local function toggleLowFps()
+	lowFpsActive = not lowFpsActive
+	if lowFpsActive then
+		applyLowFps()
+	else
+		restoreAllLowFps()
+	end
+	return lowFpsActive
+end
+-- ================= FIN BAJO FPS =================
 
 local function cornerLine(parent, size, pos, color)
 	local l = Instance.new("Frame")
@@ -1025,6 +1148,63 @@ spectateBtn.MouseLeave:Connect(function()
 	TweenService:Create(spectateBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
 end)
 
+-- BAJO FPS
+local lowFpsBtn = Instance.new("TextButton")
+lowFpsBtn.Size = UDim2.new(1, 0, 0, 46)
+lowFpsBtn.Position = UDim2.new(0, 0, 0, 202)
+lowFpsBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+lowFpsBtn.Text = "⚡ BAJO FPS OFF"
+lowFpsBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
+lowFpsBtn.Font = Enum.Font.GothamBlack
+lowFpsBtn.TextSize = 14
+lowFpsBtn.BorderSizePixel = 0
+lowFpsBtn.AutoButtonColor = false
+lowFpsBtn.Parent = actionPanel
+
+local lowFpsCorner = Instance.new("UICorner")
+lowFpsCorner.CornerRadius = UDim.new(0, 4)
+lowFpsCorner.Parent = lowFpsBtn
+
+local lowFpsGrad = Instance.new("UIGradient")
+lowFpsGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 120, 140)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(40, 40, 50)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 120, 140)),
+})
+lowFpsGrad.Rotation = 90
+lowFpsGrad.Parent = lowFpsBtn
+
+local lowFpsStroke = Instance.new("UIStroke")
+lowFpsStroke.Color = Color3.fromRGB(140, 140, 170)
+lowFpsStroke.Thickness = 1.2
+lowFpsStroke.Transparency = 0.2
+lowFpsStroke.Parent = lowFpsBtn
+
+cornerLine(lowFpsBtn, UDim2.new(0, 8, 0, 2), UDim2.new(0, 5, 0, 5), Color3.fromRGB(180, 180, 210))
+cornerLine(lowFpsBtn, UDim2.new(0, 2, 0, 8), UDim2.new(0, 5, 0, 5), Color3.fromRGB(180, 180, 210))
+cornerLine(lowFpsBtn, UDim2.new(0, 8, 0, 2), UDim2.new(1, -13, 1, -7), Color3.fromRGB(180, 180, 210))
+cornerLine(lowFpsBtn, UDim2.new(0, 2, 0, 8), UDim2.new(1, -7, 1, -13), Color3.fromRGB(180, 180, 210))
+
+lowFpsBtn.MouseEnter:Connect(function()
+	TweenService:Create(lowFpsBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 50)}):Play()
+end)
+lowFpsBtn.MouseLeave:Connect(function()
+	TweenService:Create(lowFpsBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
+end)
+
+lowFpsBtn.MouseButton1Click:Connect(function()
+	local on = toggleLowFps()
+	if on then
+		lowFpsBtn.Text = "⚡ BAJO FPS ON"
+		lowFpsBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+		lowFpsStroke.Color = Color3.fromRGB(80, 200, 80)
+	else
+		lowFpsBtn.Text = "⚡ BAJO FPS OFF"
+		lowFpsBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
+		lowFpsStroke.Color = Color3.fromRGB(140, 140, 170)
+	end
+end)
+
 -- ===== AVISO ESPECTAR =====
 local spectateNotice = Instance.new("TextLabel")
 spectateNotice.Size = UDim2.new(0, 360, 0, 28)
@@ -1615,4 +1795,5 @@ player.OnTeleport:Connect(function()
 		end)
 	end
 	if flying then pcall(stopFly) end
+	if lowFpsActive then pcall(restoreAllLowFps) end
 end)
