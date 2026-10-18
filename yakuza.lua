@@ -1,13 +1,38 @@
+--[[
+    YAKUZA HUB - DUELS EDITION (V13 - ULTIMATE TRIGGERBOT FOR STARTERPACK)
+    El Triggerbot ha sido optimizado para funcionar con CUALQUIER herramienta (Tools)
+    que provenga del StarterPack o la mochila del jugador. 
+    Detecta al enemigo bajo la mira y fuerza la activación de la herramienta local,
+    además de simular clics con VirtualUser para asegurar el disparo en todo tipo de juegos.
+]]
+
 -- LocalScript en StarterPlayerScripts
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local MaterialService = game:GetService("MaterialService")
+local VirtualUser = game:GetService("VirtualUser")
 local player = Players.LocalPlayer
 
 -- ================= [ANTIBAN] GUARDIA =================
 if _G.__YKZ_LOADED then return end
 _G.__YKZ_LOADED = true
+
+local Connections = {}
+local function SafeConnect(name, signal, callback)
+	if Connections[name] then pcall(function() Connections[name]:Disconnect() end) end
+	Connections[name] = signal:Connect(callback)
+end
+
+local _loops = {}
+local function safeLoop(fn)
+	local thread = task.spawn(fn)
+	table.insert(_loops, thread)
+	return thread
+end
 
 local function antiScanDelay()
 	local checks = 0
@@ -54,9 +79,8 @@ local function getValidKey()
 	return KEY_LIST[idx] or KEY_LIST[1], idx
 end
 
--- ================= PANTALLA ROJA BLOQUEANTE (solo si NO es bypass) =================
+-- ================= PANTALLA ROJA BLOQUEANTE =================
 if not skipKeyGate then
-
 	local keyGui = Instance.new("ScreenGui")
 	keyGui.Name = "SettingsPanel_" .. tostring(math.random(1000, 9999))
 	keyGui.ResetOnSpawn = false
@@ -236,7 +260,7 @@ if not skipKeyGate then
 		if enterPressed then submitKey() end
 	end)
 
-	task.spawn(function()
+	safeLoop(function()
 		while not keyPassed do
 			if keyGui and keyGui.Parent and keyBox and keyBox.Parent then
 				if not keyBox:IsFocused() then
@@ -250,12 +274,10 @@ if not skipKeyGate then
 	while not keyPassed do
 		task.wait(0.1)
 	end
-
 end
 -- ================= FIN DE LA PANTALLA DE KEY =================
 
 -- ================= A PARTIR DE AQUÍ, EL MENÚ ORIGINAL =================
-
 local gui = Instance.new("ScreenGui")
 gui.Name = "YakuzaMenu"
 gui.ResetOnSpawn = false
@@ -266,7 +288,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 pcall(function() gui.Name = "SettingsUI_" .. tostring(math.random(1000, 9999)) end)
 
--- ================= [ANTI-LAG] AUTO (SIN OPCIÓN) =================
+-- ================= [ANTI-LAG] AUTO =================
 local antiLagEnabled = true
 local ANTI_LAG_INTERVAL = 2.5
 local CLEANABLE_NAMES = {
@@ -327,25 +349,21 @@ local function antiLagPass()
 	end
 
 	pcall(function()
-		local lighting = game:GetService("Lighting")
-		if lighting.GlobalShadows then
-			lighting.GlobalShadows = false
-		end
-		lighting.EnvironmentDiffuseScale = 0
-		lighting.EnvironmentSpecularScale = 0
+		if Lighting.GlobalShadows then Lighting.GlobalShadows = false end
+		Lighting.EnvironmentDiffuseScale = 0
+		Lighting.EnvironmentSpecularScale = 0
 	end)
 end
 
-task.spawn(function()
+safeLoop(function()
 	task.wait(3)
 	while antiLagEnabled and gui.Parent do
 		pcall(antiLagPass)
 		task.wait(ANTI_LAG_INTERVAL)
 	end
 end)
--- ================= FIN ANTI-LAG =================
 
--- ================= [BAJO FPS] TEXTURAS MÍNIMAS (RESPETA CHARACTERS) =================
+-- ================= [BAJO FPS] TEXTURAS MÍNIMAS =================
 local lowFpsActive = false
 local lowFpsSaved = {}
 
@@ -379,23 +397,18 @@ local function restoreAllLowFps()
 		end
 	end
 	lowFpsSaved = {}
+	pcall(function() MaterialService.Use2022Materials = true end)
 	pcall(function()
-		local ms = game:GetService("MaterialService")
-		ms.Use2022Materials = true
-	end)
-	pcall(function()
-		local lighting = game:GetService("Lighting")
-		lighting.GlobalShadows = true
-		lighting.EnvironmentDiffuseScale = 1
-		lighting.EnvironmentSpecularScale = 1
+		Lighting.GlobalShadows = true
+		Lighting.EnvironmentDiffuseScale = 1
+		Lighting.EnvironmentSpecularScale = 1
 	end)
 end
 
 local function applyLowFps()
 	pcall(function()
-		local ms = game:GetService("MaterialService")
-		ms.Use2022Materials = false
-		ms.ForceTextureQuality = Enum.TextureQuality.Low
+		MaterialService.Use2022Materials = false
+		MaterialService.ForceTextureQuality = Enum.TextureQuality.Low
 	end)
 
 	for _, obj in ipairs(workspace:GetDescendants()) do
@@ -454,23 +467,17 @@ local function applyLowFps()
 	end)
 
 	pcall(function()
-		local lighting = game:GetService("Lighting")
-		lighting.GlobalShadows = false
-		lighting.EnvironmentDiffuseScale = 0
-		lighting.EnvironmentSpecularScale = 0
+		Lighting.GlobalShadows = false
+		Lighting.EnvironmentDiffuseScale = 0
+		Lighting.EnvironmentSpecularScale = 0
 	end)
 end
 
 local function toggleLowFps()
 	lowFpsActive = not lowFpsActive
-	if lowFpsActive then
-		applyLowFps()
-	else
-		restoreAllLowFps()
-	end
+	if lowFpsActive then applyLowFps() else restoreAllLowFps() end
 	return lowFpsActive
 end
--- ================= FIN BAJO FPS =================
 
 local function cornerLine(parent, size, pos, color)
 	local l = Instance.new("Frame")
@@ -526,12 +533,6 @@ cornerLine(toggleBtn, UDim2.new(0, 2, 0, 10), UDim2.new(0, 6, 0, 6))
 cornerLine(toggleBtn, UDim2.new(0, 10, 0, 2), UDim2.new(1, -16, 1, -8))
 cornerLine(toggleBtn, UDim2.new(0, 2, 0, 10), UDim2.new(1, -8, 1, -16))
 
-local _loops = {}
-local function safeLoop(fn)
-	local conn = task.spawn(fn)
-	table.insert(_loops, conn)
-end
-
 safeLoop(function()
 	while toggleBtn.Parent do
 		TweenService:Create(tStroke1, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Transparency = 0.6, Thickness = 2.5}):Play()
@@ -557,8 +558,8 @@ end)
 
 -- ===== VENTANA PRINCIPAL =====
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 560, 0, 650)
-frame.Position = UDim2.new(0, 20, 0, 145)
+frame.Size = UDim2.new(0, 800, 0, 650)
+frame.Position = UDim2.new(0.5, -400, 0.5, -325)
 frame.BackgroundColor3 = Color3.fromRGB(12, 8, 18)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -663,12 +664,11 @@ safeLoop(function()
 	end
 end)
 
--- ===== TÍTULO =====
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -120, 1, 0)
 title.Position = UDim2.new(0, 16, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "⛩  YAKUZA ON TOP"
+title.Text = "⛩  YAKUZA ON TOP | DUELS"
 title.TextColor3 = Color3.fromRGB(255, 90, 110)
 title.Font = Enum.Font.GothamBlack
 title.TextSize = 17
@@ -849,6 +849,7 @@ sep.Parent = frame
 -- ===== ZONA LISTA + ACCIONES =====
 local contentY = 140
 
+-- COLUMNA 1 (Lista)
 local listHeader = Instance.new("TextLabel")
 listHeader.Size = UDim2.new(0, 200, 0, 18)
 listHeader.Position = UDim2.new(0, 18, 0, contentY)
@@ -904,9 +905,10 @@ dropPadding.PaddingRight = UDim.new(0, 6)
 dropPadding.PaddingBottom = UDim.new(0, 6)
 dropPadding.Parent = drop
 
+-- COLUMNA 2 (Acciones Izquierda)
 local actionHeader = Instance.new("TextLabel")
 actionHeader.Size = UDim2.new(0, 200, 0, 18)
-actionHeader.Position = UDim2.new(1, -226, 0, contentY)
+actionHeader.Position = UDim2.new(0, 330, 0, contentY)
 actionHeader.BackgroundTransparency = 1
 actionHeader.Text = "⚙  ACCIONES"
 actionHeader.TextColor3 = Color3.fromRGB(255, 150, 170)
@@ -917,7 +919,7 @@ actionHeader.Parent = frame
 
 local actionPanel = Instance.new("Frame")
 actionPanel.Size = UDim2.new(0, 210, 1, -238)
-actionPanel.Position = UDim2.new(1, -226, 0, contentY + 22)
+actionPanel.Position = UDim2.new(0, 330, 0, contentY + 22)
 actionPanel.BackgroundColor3 = Color3.fromRGB(20, 14, 22)
 actionPanel.BackgroundTransparency = 0.15
 actionPanel.BorderSizePixel = 0
@@ -1082,10 +1084,133 @@ flyBtn.MouseLeave:Connect(function()
 	TweenService:Create(flyBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
 end)
 
+-- NOCLIP (Vuelo activado)
+local noclipBtn = Instance.new("TextButton")
+noclipBtn.Size = UDim2.new(1, 0, 0, 46)
+noclipBtn.Position = UDim2.new(0, 0, 0, 148)
+noclipBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+noclipBtn.Text = "👻 NOCLIP OFF"
+noclipBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
+noclipBtn.Font = Enum.Font.GothamBlack
+noclipBtn.TextSize = 14
+noclipBtn.BorderSizePixel = 0
+noclipBtn.AutoButtonColor = false
+noclipBtn.Parent = actionPanel
+
+local ncCorner = Instance.new("UICorner")
+ncCorner.CornerRadius = UDim.new(0, 4)
+ncCorner.Parent = noclipBtn
+
+local ncStroke = Instance.new("UIStroke")
+ncStroke.Color = Color3.fromRGB(100, 100, 140)
+ncStroke.Thickness = 1.2
+ncStroke.Parent = noclipBtn
+
+cornerLine(noclipBtn, UDim2.new(0, 8, 0, 2), UDim2.new(0, 5, 0, 5), Color3.fromRGB(180, 180, 210))
+cornerLine(noclipBtn, UDim2.new(0, 2, 0, 8), UDim2.new(0, 5, 0, 5), Color3.fromRGB(180, 180, 210))
+cornerLine(noclipBtn, UDim2.new(0, 8, 0, 2), UDim2.new(1, -13, 1, -7), Color3.fromRGB(180, 180, 210))
+cornerLine(noclipBtn, UDim2.new(0, 2, 0, 8), UDim2.new(1, -7, 1, -13), Color3.fromRGB(180, 180, 210))
+
+local noclipActive = false
+local noclipFlyVel = nil
+local noclipFlyGyro = nil
+local noclipConnection = nil
+local noclipSpeed = 80
+local savedNoclipWalkSpeed = 16
+
+local function getNoclipSpeed()
+	local v = tonumber(flySpeedBox.Text)
+	if v and v > 0 then noclipSpeed = v end
+	return noclipSpeed
+end
+
+local function stopNoclipFly()
+	if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
+	if noclipFlyVel then pcall(function() noclipFlyVel:Destroy() end) noclipFlyVel = nil end
+	if noclipFlyGyro then pcall(function() noclipFlyGyro:Destroy() end) noclipFlyGyro = nil end
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.PlatformStand = false
+		hum.WalkSpeed = savedNoclipWalkSpeed or 16
+	end
+	if char then
+		for _, part in pairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = true end
+		end
+	end
+end
+
+local function startNoclipFly()
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	if not hum or not root then return end
+	getNoclipSpeed()
+	savedNoclipWalkSpeed = hum.WalkSpeed
+	hum.PlatformStand = true
+
+	pcall(function()
+		noclipFlyVel = Instance.new("BodyVelocity")
+		noclipFlyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		noclipFlyVel.Velocity = Vector3.zero
+		noclipFlyVel.Parent = root
+	end)
+	pcall(function()
+		noclipFlyGyro = Instance.new("BodyGyro")
+		noclipFlyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+		noclipFlyGyro.P = 1000
+		noclipFlyGyro.Parent = root
+	end)
+
+	noclipConnection = RunService.RenderStepped:Connect(function()
+		local cam = workspace.CurrentCamera
+		local dir = Vector3.zero
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
+		if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir -= Vector3.new(0, 1, 0) end
+
+		pcall(function()
+			if noclipFlyVel then
+				if dir.Magnitude > 0 then noclipFlyVel.Velocity = dir.Unit * noclipSpeed else noclipFlyVel.Velocity = Vector3.zero end
+			end
+			if noclipFlyGyro then noclipFlyGyro.CFrame = cam.CFrame end
+		end)
+		for _, part in pairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = false end
+		end
+	end)
+end
+
+noclipBtn.MouseButton1Click:Connect(function()
+	noclipActive = not noclipActive
+	if noclipActive then
+		noclipBtn.Text = "👻 NOCLIP ON"
+		noclipBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+		ncStroke.Color = Color3.fromRGB(80, 200, 80)
+		startNoclipFly()
+	else
+		noclipBtn.Text = "👻 NOCLIP OFF"
+		noclipBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
+		ncStroke.Color = Color3.fromRGB(100, 100, 140)
+		stopNoclipFly()
+	end
+end)
+
+noclipBtn.MouseEnter:Connect(function()
+	TweenService:Create(noclipBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 50)}):Play()
+end)
+noclipBtn.MouseLeave:Connect(function()
+	TweenService:Create(noclipBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
+end)
+
 -- ESPECTAR
 local spectateBtn = Instance.new("TextButton")
 spectateBtn.Size = UDim2.new(1, 0, 0, 46)
-spectateBtn.Position = UDim2.new(0, 0, 0, 148)
+spectateBtn.Position = UDim2.new(0, 0, 0, 202)
 spectateBtn.BackgroundColor3 = Color3.fromRGB(5, 15, 20)
 spectateBtn.Text = "👁  ESPECTAR"
 spectateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1151,7 +1276,7 @@ end)
 -- BAJO FPS
 local lowFpsBtn = Instance.new("TextButton")
 lowFpsBtn.Size = UDim2.new(1, 0, 0, 46)
-lowFpsBtn.Position = UDim2.new(0, 0, 0, 202)
+lowFpsBtn.Position = UDim2.new(0, 0, 0, 256)
 lowFpsBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 lowFpsBtn.Text = "⚡ BAJO FPS OFF"
 lowFpsBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
@@ -1200,9 +1325,168 @@ lowFpsBtn.MouseButton1Click:Connect(function()
 		lowFpsStroke.Color = Color3.fromRGB(80, 200, 80)
 	else
 		lowFpsBtn.Text = "⚡ BAJO FPS OFF"
-		lowFpsBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
 		lowFpsStroke.Color = Color3.fromRGB(140, 140, 170)
 	end
+end)
+
+-- COLUMNA 3 (Acciones Derecha - TRIGGERBOT)
+local actionHeader2 = Instance.new("TextLabel")
+actionHeader2.Size = UDim2.new(0, 200, 0, 18)
+actionHeader2.Position = UDim2.new(0, 560, 0, contentY)
+actionHeader2.BackgroundTransparency = 1
+actionHeader2.Text = "🎯  TRIGGERBOT / DUELS"
+actionHeader2.TextColor3 = Color3.fromRGB(255, 150, 170)
+actionHeader2.Font = Enum.Font.GothamBold
+actionHeader2.TextSize = 11
+actionHeader2.TextXAlignment = Enum.TextXAlignment.Left
+actionHeader2.Parent = frame
+
+local actionPanel2 = Instance.new("Frame")
+actionPanel2.Size = UDim2.new(0, 210, 1, -238)
+actionPanel2.Position = UDim2.new(0, 560, 0, contentY + 22)
+actionPanel2.BackgroundColor3 = Color3.fromRGB(20, 14, 22)
+actionPanel2.BackgroundTransparency = 0.15
+actionPanel2.BorderSizePixel = 0
+actionPanel2.Parent = frame
+
+local actionCorner2 = Instance.new("UICorner")
+actionCorner2.CornerRadius = UDim.new(0, 6)
+actionCorner2.Parent = actionPanel2
+
+local actionStroke2 = Instance.new("UIStroke")
+actionStroke2.Color = Color3.fromRGB(90, 40, 60)
+actionStroke2.Thickness = 1
+actionStroke2.Parent = actionPanel2
+
+local actionPad2 = Instance.new("UIPadding")
+actionPad2.PaddingTop = UDim.new(0, 10)
+actionPad2.PaddingLeft = UDim.new(0, 8)
+actionPad2.PaddingRight = UDim.new(0, 8)
+actionPad2.Parent = actionPanel2
+
+-- BOTÓN TRIGGERBOT
+local triggerBtn = Instance.new("TextButton")
+triggerBtn.Size = UDim2.new(1, 0, 0, 46)
+triggerBtn.Position = UDim2.new(0, 0, 0, 0)
+triggerBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+triggerBtn.Text = "🔫 TRIGGERBOT OFF"
+triggerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+triggerBtn.Font = Enum.Font.GothamBlack
+triggerBtn.TextSize = 13
+triggerBtn.BorderSizePixel = 0
+triggerBtn.AutoButtonColor = false
+triggerBtn.Parent = actionPanel2
+
+local trCorner = Instance.new("UICorner")
+trCorner.CornerRadius = UDim.new(0, 4)
+trCorner.Parent = triggerBtn
+
+local trStroke = Instance.new("UIStroke")
+trStroke.Color = Color3.fromRGB(100, 100, 100)
+trStroke.Thickness = 1.5
+trStroke.Parent = triggerBtn
+
+-- Lógica del Triggerbot DEFINITIVA (StarterPack / Local Tools)
+local triggerActive = false
+local triggerConnection = nil
+local lastTriggerTime = 0
+
+local function updateTriggerbot()
+	if not triggerActive then return end
+	if tick() - lastTriggerTime < 0.05 then return end
+
+	local mouse = player:GetMouse()
+	local cam = workspace.CurrentCamera
+
+	-- 1. Raycast desde la cámara (Hitbox detections)
+	local rayOrigin = cam.CFrame.Position
+	local rayDir = cam.CFrame.LookVector * 500
+
+	local rayParams = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = {player.Character}
+	rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+	local rayResult = workspace:Raycast(rayOrigin, rayDir, rayParams)
+	local targetHit = false
+
+	if rayResult then
+		local hitModel = rayResult.Instance:FindFirstAncestorOfClass("Model")
+		if hitModel then
+			local hitPlayer = Players:GetPlayerFromCharacter(hitModel)
+			if hitPlayer and hitPlayer ~= player then
+				local hum = hitModel:FindFirstChildOfClass("Humanoid")
+				if hum and hum.Health > 0 then
+					targetHit = true
+				end
+			end
+		end
+	end
+
+	-- 2. Fallback: mouse.Target
+	if not targetHit and mouse.Target then
+		local targetModel = mouse.Target:FindFirstAncestorOfClass("Model")
+		if targetModel then
+			local targetPlayer = Players:GetPlayerFromCharacter(targetModel)
+			if targetPlayer and targetPlayer ~= player then
+				local hum = targetModel:FindFirstChildOfClass("Humanoid")
+				if hum and hum.Health > 0 then
+					targetHit = true
+				end
+			end
+		end
+	end
+
+	if targetHit then
+		-- Buscar CUALQUIER herramienta equipada (del StarterPack o no)
+		local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
+
+		if tool then
+			-- Método A: Activar la herramienta
+			pcall(function() tool:Activate() end)
+		else
+			-- Método B: Si no hay herramienta (ej. armas locales), simular clic
+			pcall(function()
+				if mouse1click then mouse1click() end
+			end)
+			pcall(function()
+				VirtualUser:ClickButton1(Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2))
+			end)
+		end
+
+		-- Forzar un clic extra para armas que lo requieran (Glock, etc)
+		pcall(function()
+			if mouse1click then mouse1click() end
+		end)
+		pcall(function()
+			VirtualUser:ClickButton1(Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2))
+		end)
+
+		lastTriggerTime = tick()
+	end
+end
+
+triggerBtn.MouseButton1Click:Connect(function()
+	triggerActive = not triggerActive
+	if triggerActive then
+		triggerBtn.Text = "🔫 TRIGGERBOT ON"
+		triggerBtn.BackgroundColor3 = Color3.fromRGB(20, 150, 20)
+		triggerBtn.TextColor3 = Color3.fromRGB(150, 255, 150)
+		trStroke.Color = Color3.fromRGB(100, 255, 100)
+		triggerConnection = RunService.RenderStepped:Connect(updateTriggerbot)
+	else
+		triggerBtn.Text = "🔫 TRIGGERBOT OFF"
+		triggerBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		triggerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		trStroke.Color = Color3.fromRGB(100, 100, 100)
+		if triggerConnection then triggerConnection:Disconnect() triggerConnection = nil end
+	end
+end)
+
+triggerBtn.MouseEnter:Connect(function()
+	TweenService:Create(triggerBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 50)}):Play()
+end)
+triggerBtn.MouseLeave:Connect(function()
+	TweenService:Create(triggerBtn, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 46)}):Play()
 end)
 
 -- ===== AVISO ESPECTAR =====
@@ -1387,7 +1671,7 @@ local function updateESP()
 	end
 end
 
-RunService.RenderStepped:Connect(updateESP)
+SafeConnect("ESP_Update", RunService.RenderStepped, updateESP)
 
 local function hookPlayer(p)
 	if espActive then
@@ -1418,9 +1702,7 @@ for _, p in ipairs(Players:GetPlayers()) do
 	hookPlayer(p)
 end
 
-Players.PlayerAdded:Connect(function(p)
-	hookPlayer(p)
-end)
+Players.PlayerAdded:Connect(hookPlayer)
 
 Players.PlayerRemoving:Connect(function(p)
 	if espTags[p] then
@@ -1437,6 +1719,10 @@ player.CharacterAdded:Connect(function()
 	if espActive then
 		task.wait(0.5)
 		applyESPToAll()
+	end
+	if noclipActive then
+		task.wait(0.5)
+		startNoclipFly()
 	end
 end)
 
@@ -1772,11 +2058,11 @@ local function setPanel(open)
 	panelOpen = open
 	if open then
 		frame.Visible = true
-		frame.Size = UDim2.new(0, 560, 0, 0)
-		TweenService:Create(frame, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 560, 0, 650)}):Play()
+		frame.Size = UDim2.new(0, 800, 0, 0)
+		TweenService:Create(frame, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 800, 0, 650)}):Play()
 		toggleBtn.Text = "⚡ CERRAR"
 	else
-		TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 560, 0, 0)}):Play()
+		TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 800, 0, 0)}):Play()
 		task.wait(0.2)
 		frame.Visible = false
 		toggleBtn.Text = "⚡ ABRIR MENÚ"
@@ -1794,6 +2080,11 @@ player.OnTeleport:Connect(function()
 			if type(conn) == "thread" then task.cancel(conn) end
 		end)
 	end
+	for _, conn in pairs(Connections) do
+		pcall(function() conn:Disconnect() end)
+	end
 	if flying then pcall(stopFly) end
 	if lowFpsActive then pcall(restoreAllLowFps) end
+	if triggerConnection then triggerConnection:Disconnect() end
+	if noclipActive then pcall(stopNoclipFly) end
 end)
